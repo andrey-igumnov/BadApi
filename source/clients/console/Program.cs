@@ -4,9 +4,11 @@
 
 namespace BadApi.Client.Console
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using CommandLine;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Newtonsoft.Json;
@@ -23,24 +25,40 @@ namespace BadApi.Client.Console
         /// <param name="args">Arguments array</param>
         private static void Main(string[] args)
         {
+            Parser.Default
+                .ParseArguments<Options>(args)
+                .WithParsed(Run);
+        }
+
+        /// <summary>
+        /// Runs the programm
+        /// </summary>
+        /// <param name="options">Command line options</param>
+        private static void Run(Options options)
+        {
             var appSettings = GetSettings();
-            SaveResult(appSettings, FetchData(appSettings));
+
+            SaveResult(
+                string.IsNullOrEmpty(options.Output) ? appSettings.Output : options.Output,
+                FetchData(appSettings, options.StartDate, options.EndDate));
         }
 
         /// <summary>
         /// Returns data from Bad API
         /// </summary>
         /// <param name="appSettings">Applicateion settings</param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
         /// <returns>Tweets list</returns>
-        private static List<Tweet> FetchData(AppSettings appSettings)
+        private static List<Tweet> FetchData(AppSettings appSettings, DateTime? startDate, DateTime? endDate)
         {
             var serviceProvider = GetServiceProvider(appSettings);
             var sdk = serviceProvider.GetRequiredService<BadApiSdk>();
 
             var data = sdk.GetTweets(new GetTweetsRequest
             {
-                StartDate = appSettings.StartDate.ToUniversalTime(),
-                EndDate = appSettings.EndDate.ToUniversalTime(),
+                StartDate = (startDate ?? appSettings.StartDate).ToUniversalTime(),
+                EndDate = (endDate ?? appSettings.EndDate).ToUniversalTime(),
             }).ToList();
 
             return data;
@@ -49,16 +67,16 @@ namespace BadApi.Client.Console
         /// <summary>
         /// Saves result to output
         /// </summary>
-        /// <param name="appSettings">Applicateion settings</param>
+        /// <param name="output">Output file path</param>
         /// <param name="data">Result data</param>
-        private static void SaveResult(AppSettings appSettings, List<Tweet> data)
+        private static void SaveResult(string output, List<Tweet> data)
         {
-            if (File.Exists(appSettings.Output))
+            if (File.Exists(output))
             {
-                File.Delete(appSettings.Output);
+                File.Delete(output);
             }
 
-            File.WriteAllText(appSettings.Output, JsonConvert.SerializeObject(data));
+            File.WriteAllText(output, JsonConvert.SerializeObject(data));
         }
 
         /// <summary>
