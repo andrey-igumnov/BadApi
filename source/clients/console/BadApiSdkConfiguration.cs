@@ -2,15 +2,18 @@
 //     Copyright (c) Andrey Igumnov. All rights reserved.
 // </copyright>
 
-namespace BadApi.Client
+namespace BadApi.Client.Console
 {
     using System;
     using Sdk;
 
+    /// <inheritdoc />
     internal sealed class BadApiSdkConfiguration : IBadApiSdkConfiguration
     {
-        public Uri ServiceUri => new Uri("https://badapi.iqvia.io/api/v1/Tweets");
+        /// <inheritdoc />
+        public Uri ServiceUri { get; set; }
 
-        public TimeSpan? RequestTimeout => null;
+        /// <inheritdoc />
+        public TimeSpan? RequestTimeout { get; set; }
     }
 }
