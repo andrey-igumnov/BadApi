@@ -1,4 +1,4 @@
-// <copyright file="IntegrationTests.cs">
+// <copyright file="TestBase.cs">
 //     Copyright (c) Andrey Igumnov. All rights reserved.
 // </copyright>
 
